@@ -1,0 +1,101 @@
+Lab 07 
+Christopher Bachelor
+Partner: Phi Hung Nguyen
+
+First, I ran ubuntu off of the disk at a SEASNET computer. I ran the
+command in the terminal
+
+ubuntu@ubuntu:~$ dpkg --get-selections | grep openssh
+openssh-client                    install
+openssh-server                    install
+openssh-sftp-server                install
+
+To make sure all the packages were installed. Then, I ran
+ubuntu@ubuntu:~$ ssh-keygen
+
+To create a set of ssh keys. The output was as follows:
+
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/ubuntu/.ssh/id_rsa): 
+/home/ubuntu/.ssh/id_rsa already exists.
+Overwrite (y/n)? y
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/ubuntu/.ssh/id_rsa.
+Your public key has been saved in /home/ubuntu/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:EPr/6n45csUBbaorJp3j3Us5oGXvLYQeZcb1AhNZIrg ubuntu@ubuntu
+The key's randomart image is:
++---[RSA 2048]----+
+|      ... o=.    |
+|     ... .=.+    |
+|    . .. . B .   |
+|     .E.  * o .  |
+|      . S* . o   |
+|       =+o..o    |
+|     ..o.+=o     |
+|    . *.+=*o     |
+|     +.====+.    |
++----[SHA256]-----+
+
+Now, initially I ran the code to become the host, however for some
+reason(probably my partner's computer) he had issues using port
+forwarding with me as the server, due to some display error, where the
+display output was not detected. Therefore next I became the client
+and my friend became the server, which fixed things. For reference,
+the commands to become a server host are as follows:
+
+sudo useradd -d /home/<homedirectory> -m <username>
+sudo passwd <username>
+
+//create .ssh directory for user
+cd /home/<homedir_name>
+sudo mkdir .ssh
+sudo chown -R <username> .ssh
+sudo chmod 700 .ssh
+
+The above commands set up the server. As part of my lab, I ran the
+code to become the client to a created server, which are as follows:
+
+#copy public key to server
+
+ubuntu@ubuntu:~$ ssh-copy-id -i chris@10.97.85.122
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ubuntu/.ssh/id_rsa.pub"
+The authenticity of host '10.97.85.122 (10.97.85.122)' can't be established.
+ECDSA key fingerprint is SHA256:3vJSiN9BdMSzIYRalo2yhs3WTEhCC5LQK28gXnPQOkw.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+chris@10.97.85.122's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with: "ssh 'chris@10.97.85.122'" and
+check to make sure that only the key(s) you wanted were added.
+
+
+
+Any time, I can run 'ifconfig' to get IP address information to ssh. 
+Now, I add the private key to ssh-agent:
+
+ubuntu@ubuntu:~$ ssh-add
+Enter passphrase for /home/ubuntu/.ssh/id_rsa: 
+Bad passphrase, try again for /home/ubuntu/.ssh/id_rsa: 
+Identity added: /home/ubuntu/.ssh/id_rsa (/home/ubuntu/.ssh/id_rsa)
+
+Now I try to ssh (with X11 session forwarding):
+
+ubuntu@ubuntu:~$ ssh -X chris@10.97.85.122
+Welcome to Ubuntu 16.10 (GNU/Linux 4.8.0-22-generic i686)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+/usr/bin/xauth:  file /home/chris/.Xauthority does not exist
+
+Now, I am successfully ssh'd into my partner's computer. Now I can run
+session fowarding commands on my side $ xterm $ gedit
+
+And these will produce gui outputs on my computer, allowing me to get
+a remote display of programs running on the host server.

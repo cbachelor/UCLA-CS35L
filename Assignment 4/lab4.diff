@@ -1,0 +1,26 @@
+2017-02-10  Christopher Kono Bachelor  <bachelor@lnxsrv07.seas.ucla.edu>
+
+	* timespec.h (timespec_cmp): Since the previous method of
+	comparison using the difference of a and b could result in integer
+	overflow in some cases, the change uses conditional statements to
+	make the comparison instead.
+	
+--- coreutils-with-bug/lib/timespec.h	2005-09-21 23:05:39.000000000 -0700
++++ coreutils-with-bug2/lib/timespec.h	2017-02-10 01:34:51.277774000 -0800
+@@ -45,8 +45,14 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
+-  return diff ? diff : a.tv_nsec - b.tv_nsec;
++  int diff;
++  if(a.tv_sec > b.tv_sec)
++    diff = 1;
++  else if (a.tv_sec == b.tv_sec)
++    diff = 0;
++  else
++    diff = -1;
++  return diff;
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP

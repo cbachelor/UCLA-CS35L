@@ -1,0 +1,10 @@
+Lab 3 log
+Chris Bachelor 004608570
+
+FIrst I downloaded Coreutils 7.6 by using wget: wget
+ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+Which allowed me to download the tar file. The following command:
+
+tar -xzvf coreutils-7.6.tar.gz
+
+Unzipped the tar file and created a  directory of its same name, coreutils-7.6.

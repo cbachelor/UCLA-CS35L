@@ -1,0 +1,98 @@
+For comparing sfrob, sfrobu, sfrobs, sfrobu -f and sfrobs -f, I
+created 3 files, with the sample test case given in Lab4, '*~BO *{_CIA
+*hXE]D *LER #@_GZY #E\OX #^BO #FKPS #NEM'. One file had just that
+line, second had 11 lines of it (~999 words), and another had 1100
+lines (around 10000 words) of it. I used the 'time' command as such to
+compare the performance of each.
+
+Small file:
+
+time ./sfrob < testfile
+real    0m0.001s
+user    0m0.000s
+sys     0m0.001s
+
+time ./sfrobu < testfile
+real    0m0.002s
+user    0m0.001s
+sys     0m0.000s
+
+time ./sfrobu -f  < testfile
+real    0m0.002s
+user    0m0.000s
+sys     0m0.001s
+
+time ./sfrobs < testfile
+real    0m0.017s
+user    0m0.002s
+sys     0m0.005s
+
+time ./sfrobs -f < testfile
+real    0m0.004s
+user    0m0.001s
+sys     0m0.006s
+
+Medium sized file:
+-----------------------------------
+time ./sfrob < testfile2
+real    0m0.003s
+user    0m0.002s
+sys     0m0.001s
+
+time ./sfrobu < testfile2
+real    0m0.010s
+user    0m0.001s
+sys     0m0.008s
+
+time ./sfrobu -f  < testfile2
+real    0m0.010s
+user    0m0.002s
+sys     0m0.007s
+
+time ./sfrobs  < testfile2
+real    0m0.007s
+user    0m0.001s
+sys     0m0.006s
+
+time ./sfrobs -f  < testfile2
+real    0m0.006s
+user    0m0.001s
+sys     0m0.006s
+
+Large file:
+----------------------------------------
+ time ./sfrob  < testfile3
+real    0m0.010s
+user    0m0.005s
+sys     0m0.004s
+
+time ./sfrobu  < testfile3
+real    0m0.066s
+user    0m0.011s
+sys     0m0.053s
+
+time ./sfrobu -f  < testfile3
+real    0m0.073s
+user    0m0.011s
+sys     0m0.061s
+
+time ./sfrobs  < testfile3
+real    0m0.108s
+user    0m0.005s
+sys     0m0.005s
+
+time ./sfrobs -f  < testfile3
+real    0m0.079s
+user    0m0.006s
+sys     0m0.005s
+
+
+From comparing the different times presented, sfrob universally spends
+the least amount of time in every category because it uses buffered
+read and write, which leads to less time spent using system calls. The
+next fastest call is sfrobs, which also makes sense because it doesn;t
+spend time byte per byte reading and writing, it just takes in a whole
+buffer at once from stdin and outputs to stdout. Lastly, sfrobu takes
+the most time since it uses unbuffered read and write, leading to alot
+of system calls. Also, the '-f' flag on the programs take more time in
+general, since it performs extra operations to change the case.

@@ -1,0 +1,156 @@
+Lab 4
+Christopher Bachelor 004608570
+
+The first steps in the lab follow essentially identical to the
+coreutils install of Lab3. I downloaded the bugged coreutils using
+
+wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/coreutils-with-bug.tar.gz
+
+then created a directory called 'coreBugInstall', and cd into the
+"coreutils-with-bug" directory. I checked the INSTALL file again to
+make sure how to install coreutils-with-bug into a specific directory,
+and like last time, the same flag "--prefix" was listed. So I ran the
+line
+
+./configure --prefix=/coreBugInstall
+
+which specified the install to /coreBugInstall. Then I ran the command
+"make" however I got an error as follows:
+
+In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^~~~~~~~
+In file included from utimecmp.h:25:0,
+   		 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note:previous declaration of 'futimens' was here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+ 	    ^~~~~~~~
+
+To solve this issue, I downloaded the patch via wget as:
+
+wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/coreutils.diff
+
+Saved the downloaded file coreutils.diff into the coreutils-with-bug
+directory, and applied the patch as:
+
+patch -p0 < coreutils.diff
+
+After using 'make' again, the compilation ended successfully. After
+looking at the patch notes, it seems as if there was a name
+declaration issue in the "extern int futimens", as well as other
+similarly named functions, that contradicted the name in the /usr
+operating system, probably because I am installing another version of
+coreutils with similar function/variable names. The patch changed all
+the declared names that had an issue by adding a "coreutils_" in front
+of each of the issue to remove the issue with the naming of these
+variables.
+
+Then we create a temporary directory at root and create test files to
+recreate the bug of this new coreutils:
+
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+
+Then in the temporary directory ran the new ls command:
+TZ=UTC0 ~/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+Which resulted in the output:
+-rw-r--r-- 1 bachelor eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 bachelor eeugrad 0 2017-02-09 17:51:29:313153643 +0000 now1
+-rw-r--r-- 1 bachelor eeugrad 0 2017-02-09 17:51:23:500997794 +0000 now
+
+The bug here is that ls -t thinks wwi-armistice is the newest file
+because it has trouble handling old files. A correct ls -t should put
+wwi-armistice at the end of the list. Now we use gdb to find out what
+is wrong:
+
+gdb ~/coreutils-with-bug/src/ls
+
+When I first started I typed 'list' to see the source code of ls,
+however realized that there was so much source code, so I typed 'info
+functions' to print out all of the functions in ls, to narrow down my
+search. In the file "ls.c", I found a lot of functions that started
+with the name "compare", and so I decided to set breakpoints at the
+first few compare functions to see what would happen.
+
+(gdb) break compare_atime
+(gdb) break compare_ctime
+(gdb) break compare_mtime
+Then I ran the program:
+(gdb) run -lt wwi-armistice now now1
+
+Then the program skipped the breakpoints of "compare_atime" and
+"compare_ctime" (presumably because it wasnt called,) but it stopped
+at "compare_mtime" so I typed 'list' to print the source
+code. compare_mtime just returned another function "cmp_mtime", and
+when I stepped into the next line of code by using 'step' the function
+called a "timespec_cmp" function, located in the timespec.h file. I
+listed the source code, which is as follows:
+
+/* Return negative, zero, positive if A < B, A == B, A > B, respectively.
+   Assume the nanosecond components are in range, or close to it.  */
+static inline int
+timespec_cmp (struct timespec a, struct timespec b)
+{
+  int diff = a.tv_sec - b.tv_sec;
+  return diff ? diff : a.tv_nsec - b.tv_nsec;
+}
+
+The above timespec_cmp function compares to times together, by
+subtracting the two together. Now, since very old files in the buggy
+ls -t is read as if it's from the future, the subtraction in int diff
+could be causing an integer overflow, where the disparity between the
+two values is so large that the sign of the difference is flipped
+since it can't be expressed in the number of bits used to express
+int. I also checked many of the other compare functions in ls.c by
+setting breakpoints, and none of them triggered the break with
+the'-lt' command I set when I ran it, so I became confident that this
+subtraction was causing an integer overflow.
+
+Now, we need to fix this bug, and since we need to use "diff -u", I
+created another directory and within that directory added a
+'lib/timespec.h' file, where I copied the contents of the original,
+however changed the above function, by creating an if statement that
+directly compares the two times and returns which one is larger. The
+code is in the lab4.diff file. Then, I used the command:
+
+diff -u coreutils-with-bug/lib/timespec.h coreutils-with-bug2/lib/timespec.h > lab4.diff
+
+Which created the patch file. Then I used the emacs command C-x 4 a
+which created a Changelog buffer where I typed the changes that
+occured, and appended it before the contents of the diff file.
+
+I then patched the timespec.h with my diff file:
+
+patch -p2 < lab4.diff
+
+Then 'make' the build to test out the fixed ls -t. The
+output was as follows:
+
+TZ=UTC0 ~/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+-rw-r--r-- 1 bachelor eeugrad 0 2017-02-10 10:20:27.249789043 +0000 now1
+-rw-r--r-- 1 bachelor eeugrad 0 2017-02-10 10:20:19.116571997 +0000 now
+-rw-r--r-- 1 bachelor eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+
+Which fixed the issue, as wwi-armistice is at the bottom.Now, I tested
+how the defualt ls -t works on the SEASnet server. In the home
+directory, I created a sample directory and filled it with the same 3
+files as before. When I use the already installed 'ls -lt', I get the
+following output.
+
+-rw-r--r-- 1 bachelor eeugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 bachelor eeugrad 0 2017-02-10 09:45:40.377118000 +0000 now1
+-rw-r--r-- 1 bachelor eeugrad 0 2017-02-10 09:45:31.573670000 +0000 now
+ 
+The year for wwi-armistice file is selected as 2054, because the
+SEASnet filesystem uses unsigned 32-bit time stamps. On the other
+hand, a local file system uses signed 32 bit, and because timestamps
+are represented as seconds since Unix Epoch, the SEASnet filesystem
+cannot display time before Epoch since it is unsigned, resulting in a
+large year. To solve this, you need to make files on the Linux local
+filesystem.

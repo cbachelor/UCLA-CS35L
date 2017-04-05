@@ -1,0 +1,8 @@
+#!/bin/sh
+dir=$1
+RESULT =`ls -Fa $dir | grep -v [/@] |\sed 's/\*$//g'`
+echo $RESULT
+
+#for FILE in $RESULT do if
+    
+    

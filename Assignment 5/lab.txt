@@ -1,0 +1,146 @@
+Lab 5
+
+For this lab, I had to create two files tr2b.c and tr2u.c. Both files
+had to implement a function similar to 'tr', however tr2b used
+bufferen IO with getchar and putchar, and tr2u used unbuffered IO. For
+tr2b.c, I simply read the command line arguments, and compared if any
+characters from stdin had same characters as the first input. I looped
+through till it did, and if so I replaced that character with the
+character in the second input of the same charcter index. This was
+fairly simple as long as I kept the loop to loop through till getchar
+hit EOF, and once it did just loop through and putchar to stdout.
+
+For tr2u.c, the code was mostly similar, except I had to use 'read'
+and 'write' to do the similar function, one byte at a time. One
+confusion I had was that I initially called standard input as 'stdin'
+in read and write, however the correct way to designate it was with 0,
+1, or -1, depending on the stream. Other than that, the two codes were
+fairly simple.
+
+I used strace to compare the speed of the two files, with very large files, created by:
+
+head --bytes=5000000 /dev/urandom > output.txt
+
+The strace command to output used the '-c' flag, which output the
+summary of system calls used:
+
+For tr2b:
+Output to file:
+
+strace -c ./tr2b 'abc' 'xyz' < output.txt > strace_output2
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 29.61    0.000098           1        79           read
+ 26.89    0.000089           1        77           write
+ 14.20    0.000047           5         9           mmap
+  8.16    0.000027           7         4           mprotect
+  5.74    0.000019           5         4           fstat
+  4.23    0.000014           7         2           open
+  2.72    0.000009           9         1           munmap
+  2.11    0.000007           4         2           close
+  2.11    0.000007           7         1         1 access
+  1.81    0.000006           6         1           execve
+  1.21    0.000004           4         1           brk
+  1.21    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000331                   182         1 total
+
+Output to terminal:
+strace -c ./tr2b abc xyz < output.txt > file2
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 98.43    0.025504           1     19876           write
+  1.02    0.000265           3        79           read
+  0.17    0.000044           5         9           mmap
+  0.10    0.000025           6         4           mprotect
+  0.09    0.000024           6         4           fstat
+  0.05    0.000012           6         2           open
+  0.04    0.000010          10         1           munmap
+  0.03    0.000007           4         2           close
+  0.02    0.000006           6         1         1 access
+  0.02    0.000006           6         1           execve
+  0.02    0.000004           4         1           brk
+  0.01    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.025910                 19981         1 total
+
+
+For tr2u to file:
+strace -c ./tr2u 'abc' 'xyz' < output.txt > strace_output
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.31    5.490711           1   5000000           write
+ 44.69    4.436810           1   5000002           read
+  0.00    0.000039          10         4           mprotect
+  0.00    0.000038           5         7           mmap
+  0.00    0.000020          10         2           fstat
+  0.00    0.000012           6         2           open
+  0.00    0.000009           9         1           munmap
+  0.00    0.000007           7         1         1 access
+  0.00    0.000006           3         2           close
+  0.00    0.000006           6         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    9.927665              10000024         1 total
+
+For output to terminal:
+strace -c ./tr2u abc xyz < output.txt > /dev/null
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.87    6.068480           1   5000000           write
+ 44.13    4.792865           1   5000002           read
+  0.00    0.000038           5         7           mmap
+  0.00    0.000026           7         4           mprotect
+  0.00    0.000014           7         2           open
+  0.00    0.000010          10         1           munmap
+  0.00    0.000007           4         2           close
+  0.00    0.000007           4         2           fstat
+  0.00    0.000007           7         1         1 access
+  0.00    0.000007           7         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   10.861469              10000024         1 total
+
+Note above that while outputting very large files to terminal in
+PuTTy, it encounters issues that seems specific to using PuTTy, where
+the whole screen will be filled with the word "PuTTy". To avoid this,
+I made the output to '/dev/null' instead, which does things equivalent
+to outputting to terminal.
+
+Now, Comparing tr2u and tr2b, it is obvious from the above outputs
+that the buffered outputs call way fewer system calls, thus shortening
+the total amount of time that it takes to finish running. This is
+because buffered output collects as many bytes as possible before
+performing a system call, while unbuffered uses a system call for
+every byte read/written. Also, outputting to terminal takes more time
+for both buffered and unbuffered, since it requires different system
+calls that take more time.
+
+Now, we compared the time it takes to do these operations, using the
+time command to see how much time it takes to copy a file for buffered
+vs. unbuffered.
+
+for tr2u:
+time ./tr2u abc xyz < output.txt > timeu
+
+real 0m5.911s
+user 0m0.349s
+sys 0m5.493s
+
+for tr2b:
+time ./tr2b abc xyz < output.txt > timeb
+
+real 0m0.509s
+user 0m0.211s
+sys 0m0.005s
+
+Again, the unbuffered version takes much more time to finish the
+operation, because read and write one byte at a time takes much more
+time that getchar and putchar which performs buffered system calls.
+
+
+
+

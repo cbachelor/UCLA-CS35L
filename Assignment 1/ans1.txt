@@ -1,0 +1,73 @@
+Answers to the lab 1 questions Christopher Bachelor 004608570
+
+1. Type "man -K word" where the word is the word you want to search, and this
+will print all the commands with that word. This was found by using man man as
+in the hint, and looking at all of the possible flags.
+
+2. The following answers were found by using the command "whereis" followed by a
+space and the command name. The second directory printed is the location of the
+source file for the command.  cp was found in: /usr/share/man/man1p/cp.1p.gz wc
+was found in: /usr/share/man/man1p/wc.1p.gz
+
+3. I found the answer to the question by using "find /usr/bin/ -name ?" Where ?
+fills in any single character. I got three results, which I searched in whatis:
+w Shows who is logged on and what they are doing [ Nothing appropriate X A
+portable, network-transparent window system
+
+4. Following the hint I used the command "readlink /usr/bin/emacs" which prints
+out the value of the symbolic link attached to it. The file called with emacs
+is: /etc/alternatives/emacs
+
+5.Following the commands listed in lecture and listed in the manual, "g+s" sets
+group ID on execution for the group. "o-x" means that the file is not executable
+by the other users not in the file's group.
+
+6. By reading the man page for find, you see that the command "-ctime -n" is
+used to find files changed n*24 hours ago. Therefore use "-ctime -21" to find
+the files in the last 3 weeks.
+
+7. By using the command "find -type d -ctime -21" the directories that were
+modified in my user were: .  ./Documents ./Documents/35L
+./.emacs.d/auto-save-list
+
+8.First I used whereis command to find the find directory, which is located in
+"/usr/bin/". Now using man find we know that the command "find -type l" inside
+/usr/bin prints all of the symbolic links in the directory. Since there are so
+many of them, I added "| -nl" in the last command to print out the line numbers
+of the output, showing that there are 354 symbolic links.
+
+9.By going into the man page for ls, I found the command "ls -c -lt" which lists
+files by the newest time first. The oldest file is at the end which was
+"libXdamage.so.1", a symbolic link to the file "libXdamage.so.1.1.0" last
+modified Mar 27 2014.
+
+10. In the hint it suggested localedef, which had the command "localedef
+--help", which states that the locale path is located in
+"/usr/lib/locale:/usr/share/i18n". In the locale man page, it states that locale
+gets its data from the LC_* environment variables
+
+11. By using C-h to get into the help section of emacs, I found out that typing
+a allows you to search command keywords. Commands with sort are:
+Buffer-menu-sort sort-columns sort-fields sort-lines sort-numeric-fields
+sort-pages sort-paragraphs sort-regexp-fields tabulated-list-col-sort
+tabulated-list-sort
+
+12. By typing C-h to get the help bar, type 'b' to get the key binding
+lists. Then you can search all the key bindings.  C-M-a beginning-of-defun- move
+backward to the beginning of a defun C-M-b backward-sexp - Move backward across
+one balanced expression(sexp) C-M-c exit-recursive-edit - Exit form the
+innermost recursive edit or minibuffer.  C-M-d down-list - Move forward down one
+level of parentheses.  C-M-e end-of-defun- Move forward to the next end of defun
+C-M-f forward sexp - Move forward accross one balanced expression (sexp).  C-M-h
+mark-defun - Put mark at end of this defun, point at beginning.
+
+13. C-g is keyboard quit. Signal a 'quit' condition. During execution of Lisp
+code, this character causes a quit directly. At top-level, as an editor command,
+this simply beeps.
+
+14. Again I used a search function "C-s w" in the keybinding section to search
+for yank. Yank reinserts the last stretch of killed text. It reinserts the most
+recent kill
+
+15. The dired command "C-x d" shows the available memory in the directory, while
+"ls -l" doesnt show that. Besides that nothing seems that different.

@@ -1,0 +1,34 @@
+Hw questions for hw7
+
+1. Even if another team observed all of the bytes sent across the
+network, my network would still be secure as long as they don't have
+access to our private keys, since the message is encrypted. The
+encrypted key can only by decoded by our private keys, which are
+secure in the system files on the local computer.
+
+Part 1: Even if the other team can see our keystrokes, the network is
+still secure, since it isn't our passwords that are decrypting the
+message, it is our private keys. Unless they get access to our private
+keys, we can even have the message transfer not have password
+requirement, since it is locked by keys hidden in the local system.
+
+Part 2: Now, if they got access to the USB that it is booting off of,
+there is a high chance that the network will become insecure, since
+most likely all the OS local files are stored on the USB as
+well. Therefore, important information such as private keys can be
+accessed by gaining access to the USB. One way to prevent this issue,
+is to boot the system off of the USB, however store local files onto
+the local harddrive, for instance. Then, access to a USB will most
+likely keep the network still safe.
+
+2. The --verify command only compares whether the digital signature on
+the targer file matches a detached signature of the sender to make
+sure the public keys in both match or not. This is not necessarily a
+safe check, since a hacker can alter the tar file, sign it himself,
+and sends his own detached public signature to whoever receiving the
+file, and can trick the --verify option. A way to solve this issue is
+to make it very open to the public what your public key is, by
+directly contacting the receiver or posting on the internet, so that
+if the public key in the received file is different, the receiver can
+check online or some way to make sure there was no alternation to the
+file.

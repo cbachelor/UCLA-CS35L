@@ -1,0 +1,22 @@
+gitk-description
+
+The top left box lists all of the history of the git commits,
+graphically represented with branches. The separate branches and
+colors indicate the branches of the commits and merges together to
+indicate a merge. The screenshot spicifically highlights when one of
+these branches merge, and next to the diagram is a description of the
+quick commit tag associated with the commit.
+
+The box to the right of it displays the name of the person who
+committed the branch, with the name and email address of the
+person. To the right of that box is the date of the commit, listed in
+year-month-date and time.
+
+Below the top boxes shows the diff files of the commit itself. Starts
+off by listing the cauthor of the code, the commiter, and the hash key
+related to the branches, parent and child. Under the line "Branches"
+lists the multiple branches associated with the file, and below all of
+that is the actual diff of the commit. Usually this output here is
+like any diff file, however since the screenshot is of the merge,
+there is just a simple comment. The right of that lists the comments
+that the committer included for readability.

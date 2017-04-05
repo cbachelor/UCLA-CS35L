@@ -1,0 +1,102 @@
+Homework 9 
+Christopher Bachelor
+004608570
+
+I first entered the diffutils directory and typed
+
+git checkout v3.0 -b  quote
+
+To create a new branch called "quote" that I use in this lab. I pass
+through the patch into this version 3.0 of diffutils
+
+patch -p1 < quote-3.0-patch.txt
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+After the patch successfully runs, I open emacs for all 6 of the files
+that were patched, I use the command
+'add-change-log-entry-other-window' (C-x 4 a) to open a separate
+buffer of the changelog in a file called "ChangeLog", and typed the
+specifics of the changes that occurred in each file (which were all
+essentially the same). Then, I copied and pasted the changelog into
+the ChangeLog-2008 file as well, just for documenting. Then, I ran:
+
+git add .
+git commit -F ChangeLog
+
+The first command added the current diffutils directory of the branch,
+and then the next line committed those files to git with "ChangeLog"
+as the commit message. Now, when I
+
+git format-patch -1 --stdout > formatted-patch.txt
+
+It saves a patch of the new commit into the text file. The "-1" flag
+makes the patch only include changes to all the commits made in the
+branch, and the "--stdout" printed out the patch to stdout so that I
+can save it into the .txt file.
+
+Now, I gave this formatted-patch.txt file to my partner Lawrence Cheng.
+
+I received a patch myself as well, and named it friend-patch.txt. I
+created a new branch using "git checkout v3.0 -b parter" and applied
+the new patch as follows.
+
+git am < friend-patch.txt
+
+This applies the patch successfully, and when I 'git log' it shows the
+commit message of my parter:
+
+commit 108aefd8a132a7d39b16f53344097d38cf8d1124
+Author: Lawrence Shuen Cheng <shuen@lnxsrv06.seas.ucla.edu>
+Date:   Fri Mar 17 21:52:36 2017 -0700
+
+    2017-03-17 Lawrence Shuen Cheng <shuen@lnxsrv06.seas.ucla.edu>
+
+        * ChangeLog-2008: Modified ` to ' for files:
+        src/cmp.c
+        src/diff.c
+        src/diff3.c
+        src/dir.c
+        src/sdiff.c
+        src/util.c
+
+Then I make this new diffutils with "./bootstrap", "./configure" and
+"make". Then I make a directory of this compile program with "make
+distdir". This created a directory called
+"diffutils-3.0patch.1-108a-dirty" and when I cd into it and view the
+ChangeLog file, it is the changelog of my partners: 2017-03-17
+Lawrence Shuen Cheng <shuen@lnxsrv06.seas.ucla.edu>
+
+        2017-03-17 Lawrence Shuen Cheng <shuen@lnxsrv06.seas.ucla.edu>
+                * ChangeLog-2008: Modified ` to ' for files:
+                src/cmp.c
+                src/diff.c
+                src/diff3.c
+                src/dir.c
+                src/sdiff.c
+                src/util.c
+
+-----------------------------------------------------------
+
+
+For the gitk section of the assignment, since I am on Windows, I first
+installed X-ming onto my computer, and went through the install
+process. Then, I went into PuTTy and under Connection->SSH-X11 I
+checked the box that enabled X11 forwarding and declared X display
+location as "localhost:0.0" I entered Linux server 06. The details on
+setting up PuTTy for Xming was found here:
+http://www.geo.mtu.edu/geoschem/docs/putty_install.html
+
+Now, I enter SEASNET server, then ran
+
+cd ~eggert/src/gnu/emacs
+gitk
+
+Which opens a GUI on your local computer due to X-forwarding. Now, I
+just scrolled through all the commits on gitk of emacs till I hit
+2015-01-25, and selected the most recent merge on that date. I took a
+screenshot, saved it as gitk-screenshot.png

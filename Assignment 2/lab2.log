@@ -1,0 +1,107 @@
+Lab section:
+
+Firstly, since the locale in my machine was not set to "C" after the
+command 'locale', I wrote "export LC_ALL='C'" to change the locale to
+avoid any issues.  I sorted the words file using the sort command
+'sort /usr/share/dict/words> words'. Then I got a copy of the
+assignment web page using
+
+'wget \
+http://web.cs.ucla.edu/classes/winter17/cs35L/assign/assign2.html'.
+
+
+The command tr -c 'A-Za-z' '[\n*]' and tr -cs
+'A-Za-z' '[\n*]' with '< assign2.html' fed into the command output a
+long text of one word phrases. The first command contains a lot of
+white space in between, while the second command removes all white
+space between the words.
+
+The third command, 'tr -cd 'A-Za-z' '[\n*]' | sort' Sorts the output
+from the previous step and orders it in ASCII order, because of
+the addition of the sort command.
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u
+This command eliminated duplicate words from the third command, while
+maintaining the sort command's alphabetical order. The removal of
+duplicates is due to the '-u' flag, which, according to the man page,
+outputs only the first appearance of a word.
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words prints a comparison
+between the html file thats sorted and the words file created
+previously. It prints out a long text of words that are in the two
+files, and according to the man page, orders them as lines unique to
+the html file, the words file, and lines common in both.
+
+The final command produces a much shorter output, and because of the
+-23 flags attached it produces an output of words that are only unique
+to the trace of the html file, since -23 suppresses output of lines
+unique to words and lines that appear in both files.
+
+Afterwards, I implemented the hawaiian dictionary by using a shell
+script to sort through the Hawaiann dictionary page which I got by
+'wget http://mauimapp.com/moolelo/hwnwdseng.htm'.  In buildwords, the
+shell script file, I included the following lines in order to parse
+through the htm file to produce a Hawaiian dictionary:
+
+sed '/<tr>/,/<\/td>/d' - | \
+This line cuts out all the English words
+
+grep '<td>.*</td>$' - | \
+This line only takes out the Hawaiian words in the file
+
+sed 's/<[^>]*>//g' - | \
+This line removes all html tags
+
+sed 's/^\s*//g' |\
+This line removes all the spaces present in the
+front of each line
+
+sed 's/\,\s/\n/g' |\
+This replaces every comma with a new line(new word)
+
+sed 's/\s/\n/g' |\
+This replaces every space in with a new line(new word) 
+
+tr -s '\n' |\
+This removes any extra new lines present
+
+tr '[:upper:]' '[:lower:]' |\
+Converts all upper case letters to lower case
+
+sed s/\`/\'/g |\
+Converts all ` characters to '
+
+grep "^[pk\'mnwlhaeiou]*$" |\
+Removes all entries that has non-Hawaiian characters
+
+sort -u Sorts the output, removes any duplicates
+---------------------------------------------- Next I ran the script
+and saved the output to hwords: ./buildwords < hwnnwdseng.htm > hwords
+
+This produced the Hawaiann dictionary. I applied it to the last shell
+command to check the spelling of Hawaiian for assign2.html.
+
+tr 'PKMNWLHAWIOU' 'pkmnwlhaeiou' < assign2.html | tr -cs \
+"pl\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords | wc -l
+
+The above command outputted 197, which is the number of misspelled
+words (which was in English) compared to Hawaiian dictionary. The
+command took assign2.html, keeps only words with Hawaiann characters,
+sorts it, and compares it to the Hawaiann dictionary. I saved the
+output of the command without the 'wc -l' command attached to it in a
+file HWMisspell.txt for later. I also ran the command with hwords as
+the initial input and had 0 spelling mistakes, which checks my work. I
+saved the output of the last shell command which used the English
+dictionary and saved it to a file named ENMisspell.txt. I compared the
+files using comm:
+
+comm -23 ENMisspell.txt HWMisspell.txt | wc -l Which signified there
+were 75 unique mistakes in the html file using the English
+dictionary. Some examples of words that were marked as misspelled:
+All,DOCTYPE, HTML, Homework, Eggert, spell, etc.
+
+comm -13 ENMisspell.txt HWMisspell.txt | wc -l Produced 191 unique
+mistakes in the html file according to the Hawaiian dictionary. Some
+expamples where it's not misspelled if in English: people paul open
+name
+ 

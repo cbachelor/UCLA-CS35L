@@ -1,0 +1,34 @@
+Q1. When you look at the patch notes it seems like 'case
+long_iso_time_style:' is declared two times in a row, when the first
+one doesn't seem like its doing anything. I believe one was removed
+since it had no effect, so to remove any unnecessary code.
+
+Q2. The program may introduce bugs specific to programs that relied on
+the ordering of the output of the date in the old form, since now the
+date is represented differently. Also since the fixed UNIX format uses
+English words for the month, it may also cause errors in code and
+understanding for people overseas not accustomed to English.
+
+Q3.  When you call randline.py as follows: python randline.py
+/dev/null you get the following output:
+
+File "/usr/local/cs/Python-2.7.12/lib/python2.7/random.py", line 275,
+in choice return seq[int(self.random() * len(seq))] # raisies
+IndexError if seq is empty IndexError: list index out of range
+
+Essentially the script is trying to parse through the file you put in
+as input by indexing into the file. As stated in the error message, it
+will output a IndexError message if you index out of range, and since
+/dev/null, an empty file, has no lines to index through, it will
+report a list index out of range.
+
+Q4.  The error message you get by using python 3 is as follows:
+
+File "randline.py", line 65 except IOError as (errno, strerror): ^
+  SyntaxError: invalid syntax
+
+A big change in python 3 is that it removed tuple parameter
+unpacking. This is used when an argument of a function is a sequence
+of length two. In randline.py, the above line for IOError uses a tuple
+parameter, and hence in python 3 you run into errors. You can fix this
+by just passing the parameters separately rather than in a tuple.

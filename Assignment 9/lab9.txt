@@ -1,0 +1,251 @@
+Christopher Bachelor 
+004608570
+
+Lab9 
+
+First I created a new directory to organize files called "Lab9". Then
+I ran the git command
+
+git clone ~eggert/src/gnu/diffutils 
+
+And it quickly copied diffutils into my working directory. Now, I
+looked up the changes to diffutils by running the command
+
+git log > git-log.txt
+
+And saved it into a text file for future viewing. I then ran 
+
+git tag > git-tag.txt
+
+To save a list of tags for the versions of diffutils. Next for step 4
+I had to find a specific commit that was titled "maint: quote 'like
+this' or "like this", not `like this'", and initially I thought about
+searching through all the different tags, but soon realized I can
+search this in the git-log.txt file I created so I used C-s in emacs
+to search for the title. To get the commit, I copied that hash value
+attached to that commit, and used the command:
+
+git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > quote-patch.txt
+
+Since from the man page git show displays the log message and textual
+diff, I output the diff into a file called "quote-patch.txt" so that I
+can later use it to patch.
+
+
+5. Next I checkout out version 3.0 of Diffutils by first identifying
+the tag of version 3.0, which was v3.0, then ran the command
+
+git checkout v3.0 -b testBranch
+Switched to a new branch 'testBranch'
+
+The '-b' option named the v3.0 as "testBranch", while saving the old
+version, so I can call "git checkout master" to switch to the original
+branch.
+
+Next to apply the patch to v3.0 from "quote-patch.txt", I ran the
+patch command with the "-p1" option because the directories listed in
+the diff file were one directory above where the files were located,
+i.e. in locations such as "a/man", so "-p1" applies it to just "man".
+
+patch -p1 < quote-patch.txt
+
+This caused some errors in the process, because there were some files
+that were in the newest version that weren't in version 3.0. Hence it
+asked me which file to patch since it couldn't fine the relevant file,
+and so I had to hit enter and make the patch skip those files.  Also
+some of the "Hunks" of patch failed probably due to chunks of code not
+existing on the old versions of the file and these were saved as
+rejects into files ending with .rej.
+
+Example of error message:
+-----------------------------------------
+Hunk #1 FAILED at 9.
+Hunk #3 FAILED at 60.
+2 out of 3 hunks FAILED -- saving rejects to file README.rej
+patching file README-hacking
+Hunk #1 FAILED at 19.
+1 out of 1 hunk FAILED -- saving rejects to file README-hacking.rej
+patching file TODO
+patching file cfg.mk
+Hunk #1 FAILED at 29.
+1 out of 1 hunk FAILED -- saving rejects to file cfg.mk.rej
+patching file doc/diagmeet.note
+can't find file to patch at input line 222
+Perhaps you used the wrong -p or --strip option?
+The text leading up to this was:
+--------------------------
+|diff --git a/doc/diffutils.texi b/doc/diffutils.texi
+|index 58b140c..00403df 100644
+|--- a/doc/diffutils.texi
+|+++ b/doc/diffutils.texi
+--------------------------
+File to patch:
+Skip this patch? [y] y
+Skipping patch.
+--------------------------------------------------------
+
+End of output:
+--------------------------------------------------------
+patching file src/system.h
+Hunk #2 succeeded at 105 (offset 6 lines).
+patching file src/util.c
+Hunk #4 succeeded at 190 with fuzz 2.
+Hunk #8 succeeded at 650 (offset -27 lines).
+patching file tests/help-version
+Hunk #1 succeeded at 75 (offset 1 line).
+Hunk #2 succeeded at 85 (offset 1 line).
+Hunk #3 succeeded at 96 (offset 1 line).
+Hunk #4 succeeded at 108 (offset 1 line).
+Hunk #5 succeeded at 140 (offset 1 line).
+Hunk #6 succeeded at 188 (offset 1 line).
+---------------------------------------------------------
+
+With the patch hopefully successfully applied, I checked the status of
+the changes that occurred to the current v3.0 branch.
+
+--------------------------------------------------------------------
+git status
+On branch testBranch
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   NEWS
+        modified:   README
+        modified:   TODO
+        modified:   doc/diagmeet.note
+        modified:   ms/config.bat
+        modified:   ms/config.site
+        modified:   po/en.po
+        modified:   src/analyze.c
+        modified:   src/cmp.c
+        modified:   src/context.c
+        modified:   src/diff.c
+        modified:   src/diff.h
+        modified:   src/diff3.c
+        modified:   srquotc/dir.c
+        modified:   src/ifdef.c
+        modified:   src/io.c
+        modified:   src/sdiff.c
+        modified:   src/side.c
+        modified:   src/system.h
+        modified:   src/util.c
+        modified:   tests/help-version
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        #git-log.txt#
+        #git-tags.txt#
+        #quote-patch.txt#
+        NEWS.orig
+        README-hacking.orig
+        README-hacking.rej
+        README.orig
+        README.rej
+        a.txt
+        cfg.mk.orig
+        cfg.mk.rej
+        git-log.txt
+        git-tags.txt
+        ms/config.site.orig
+        quote-patch.txt
+        src/cmp.c.orig
+        src/context.c.orig
+        src/diff.c.orig
+        src/diff.c.rej
+        src/diff.h.orig
+        src/diff3.c.orig
+        src/diff3.c.rej
+        src/dir.c.orig
+        src/sdiff.c.orig
+        src/system.h.orig
+        src/util.c.orig
+        tests/help-version.orig
+-----------------------------------------------------------
+
+As you can see there are some files that were modified by the patch
+and those are tracked, while some weren't (some old and additional
+files related to the lab) and those are unmodified.
+
+Now, the next task is to go through each modified file to undo changes
+to files that had changes to non-literal constants, so mainly
+comments, since the intention is to not change the documentation but
+change the output of the code. So, we use emacs to go through each
+modified file, and use vc-diif (C-x v =) to pull up the diff of the
+file with the previous version of it, and for all files that don't end
+with .c, we undo the whole change by vc-revert (C-x v u). For the .c
+files that actually contain code, we view the diff and go through each
+"hunk" of the diff file and if the code changed is not a character
+string constants, we run undo-diff-apply-hunk (C-u C-c C-a) to revert
+the patch. If you need to look a the source, diff-goto-source(C-c C-c)
+is helpful to view the source file corresponding to diff.
+
+Now, there are additional changes that were rejected, in the
+src/*.c.rej types of files. I ran "ls src/*.c.rej" to find two files
+with that ending, "src/diff.c.rej" and "src/diff3.c.rej" so I made the
+changes listed those to the original .c files. Important to note is
+that the lines listed in these diff files exist in the .c file, just
+at a different line, which is what caused the rejection in the first
+place.
+
+Once everything was cleaned up, I ran "git clean -f" to force removal
+of untracked files. Now, if i run git status, I get the following
+modified files.
+
+        modified:   src/cmp.c
+        modified:   src/diff.c
+        modified:   src/diff3.c
+        modified:   src/dir.c
+        modified:   src/sdiff.c
+        modified:   src/util.c
+
+Next we get the diff of the current branch and save it by "git diff >
+quote-3.0-patch.txt". This file only contains code so it looks to be
+the proper patch. Now, following the instruction in "README-hacking",
+run the following commands (I used Linux server 01):
+
+./bootstrap
+./configure
+make
+
+Now I had the following error when running "make check"
+
+Makefile:1403: recipe for target 'check-am' failed
+make[1]: *** [check-am] Error 2
+make[1]: Leaving directory '/w/home.10/ee/ugrad/bachelor/Documents/35L/Lab9/diffutils/tests'
+Makefile:1016: recipe for target 'check-recursive' failed
+make: *** [check-recursive] Error 1
+
+And since a TA on Piazza said to ignore the message, I just proceeded
+to test the new diff created. I ran the following commands in /src and
+got the outputs:
+
+./diff . - 
+./diff: cannot compare '-' to a directory
+
+./diff --help
+
+both outputs above used ' ' instead of ' ` so I got the correct
+outputs. I also made sure by running "./diff -version" and the version
+was still 3.0 which was what was desired.
+
+14). Now, to perform the sanity check to the new version of Diffutils,
+I exited the diffutils directory and copied the diffutils/src folder
+as "diffutils-3.0-patch". Then, I tagged the current branch with
+
+git tag -a v3.0patch 
+git add src
+git commit
+
+I couldve committed the whole diffutils, however since the only
+moificaitons happened in /src I just did that directory. Now, I
+switched to the original v3.0 by "git checkout v3.0" and copied that
+as "diffutils-3.0". Now, I ran the new diff command:
+
+diffutils-3.0-patch/diff -pru diffutils-3.0 diffutils-3.0-patch > quote-3.0.test.txt
+
+Then, ran a diff between the new file and quote-3.0-patch.txt. The
+output I got was just a bunch of changes due to the naming conventions
+of the directories and files in each diff, and had nothing to do with
+the code itself, so the diffrences were innocuos.
